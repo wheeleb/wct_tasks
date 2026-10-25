@@ -19,4 +19,4 @@ Import this repository at vercel.com/new. Vercel detects Vite automatically (bui
 
 ## Saving volunteer sign-ups
 
-Without a Firebase config, sign-ups and updates are kept in memory only and reset on reload.
+Sign-ups and updates are saved in a Google Sheet. See `SHEET_SETUP.md` for the setup steps. Until `VITE_SHEET_API_URL` is set, the site runs in preview mode and nothing is saved.

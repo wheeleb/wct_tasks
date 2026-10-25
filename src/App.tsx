@@ -33,190 +33,189 @@ import {
   ExternalLink
 } from 'lucide-react';
 
-// Optional Firebase initialization
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, doc, onSnapshot, setDoc, updateDoc, addDoc, deleteDoc } from 'firebase/firestore';
+// Google Sheet backend (see SHEET_SETUP.md). Without this address the page runs in preview mode.
+const API_URL = import.meta.env.VITE_SHEET_API_URL;
+
+async function callApi(body) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || 'Something went wrong. Please try again.');
+  return data;
+}
 
 // --- Default Preloaded WCT Schoolhouse Tasks ---
 const INITIAL_TASKS = [
   {
-    id: 'wct-task-1',
-    title: 'Research Potential Donors & VT Grants',
-    category: 'Fundraising',
-    description: 'Research local businesses, alumni, historical organizations, and identify active Vermont preservation grants with upcoming application deadlines.',
-    deliverable: 'Spreadsheet of 15+ potential donors & list of 3-5 open VT grants with application dates.',
-    targetDate: '2026-11-15',
-    status: 'Open',
-    owner: null,
-    helpers: [],
-    updates: [
-      { id: 'u1', author: 'WCT Committee', text: 'Task created for initial fall outreach.', date: '2026-10-20' }
-    ]
+    "id": "wct-task-1",
+    "title": "Research Potential Donors & VT Grants",
+    "category": "Fundraising",
+    "description": "Research local businesses, alumni, historical organizations, and identify active Vermont preservation grants with upcoming application deadlines.",
+    "deliverable": "Spreadsheet of 15+ potential donors & list of 3-5 open VT grants with application dates.",
+    "targetDate": "2026-11-15",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-2',
-    title: 'Draft Donor Outreach Letters & Contact Lists',
-    category: 'Fundraising',
-    description: 'Help prepare clear, warm email, phone, and in-person outreach materials to invite community and donor support for the restoration.',
-    deliverable: 'Draft outreach templates (email & letter) plus consolidated contact list.',
-    targetDate: '2026-11-30',
-    status: 'Open',
-    owner: null,
-    helpers: [],
-    updates: []
+    "id": "wct-task-2",
+    "title": "Draft Donor Outreach Letters & Contact Lists",
+    "category": "Fundraising",
+    "description": "Help prepare clear, warm email, phone, and in-person outreach materials to invite community and donor support for the restoration.",
+    "deliverable": "Draft outreach templates (email & letter) plus consolidated contact list.",
+    "targetDate": "2026-11-30",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-3',
-    title: 'Fundraising Event Support & RSVP Lists',
-    category: 'Fundraising',
-    description: 'Assist with planning small community fundraising gatherings, welcome handouts, sign-in sheets, and following up with RSVPs.',
-    deliverable: 'Event checklist, sign-in sheets, and volunteer schedule for our first gathering.',
-    targetDate: '2026-12-10',
-    status: 'Open',
-    owner: null,
-    helpers: [],
-    updates: []
+    "id": "wct-task-3",
+    "title": "Fundraising Event Support & RSVP Lists",
+    "category": "Fundraising",
+    "description": "Assist with planning small community fundraising gatherings, welcome handouts, sign-in sheets, and following up with RSVPs.",
+    "deliverable": "Event checklist, sign-in sheets, and volunteer schedule for our first gathering.",
+    "targetDate": "2026-12-10",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-4',
-    title: 'Project Updates & Historical Photo Collection',
-    category: 'Communications',
-    description: 'Write short, engaging project updates for the community and gather archival photographs and stories of the schoolhouse from residents and alumni.',
-    deliverable: 'Two short articles for town bulletin/press + digital folder of tagged historical photos.',
-    targetDate: '2026-11-20',
-    status: 'In Progress',
-    owner: { name: 'Sarah Jenkins', email: 'sarah.j@example.com', phone: '802-555-0143' },
-    helpers: [{ name: 'David M.', email: 'dm@example.com' }],
-    updates: [
-      { id: 'u2', author: 'Sarah Jenkins', text: 'Found 4 vintage class photos from the 1940s at the town library!', date: '2026-10-23' }
-    ]
+    "id": "wct-task-4",
+    "title": "Project Updates & Historical Photo Collection",
+    "category": "Communications",
+    "description": "Write short, engaging project updates for the community and gather archival photographs and stories of the schoolhouse from residents and alumni.",
+    "deliverable": "Two short articles for town bulletin/press + digital folder of tagged historical photos.",
+    "targetDate": "2026-11-20",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-5',
-    title: 'Flyers, Posters & Community Talking Points',
-    category: 'Communications',
-    description: 'Prepare printable flyers for town bulletin boards and simple talking points that WCT members and volunteers can use when talking to neighbors.',
-    deliverable: 'Print-ready 1-page flyer + concise 5-point cheat sheet on project goals.',
-    targetDate: '2026-11-25',
-    status: 'Open',
-    owner: null,
-    helpers: [],
-    updates: []
+    "id": "wct-task-5",
+    "title": "Flyers, Posters & Community Talking Points",
+    "category": "Communications",
+    "description": "Prepare printable flyers for town bulletin boards and simple talking points that WCT members and volunteers can use when talking to neighbors.",
+    "deliverable": "Print-ready 1-page flyer + concise 5-point cheat sheet on project goals.",
+    "targetDate": "2026-11-25",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-6',
-    title: 'Schoolhouse Restoration Webpage Hub',
-    category: 'Website & Online',
-    description: 'Review current wolcottcommunitytrust.com site and assist in laying out a dedicated Schoolhouse Restoration Hub page with timeline, photos, and donation link.',
-    deliverable: 'Page wireframe, updated copy, and suggested media layout.',
-    targetDate: '2026-12-05',
-    status: 'Open',
-    owner: null,
-    helpers: [],
-    updates: []
+    "id": "wct-task-6",
+    "title": "Schoolhouse Restoration Webpage Hub",
+    "category": "Website & Online",
+    "description": "Review current wolcottcommunitytrust.com site and assist in laying out a dedicated Schoolhouse Restoration Hub page with timeline, photos, and donation link.",
+    "deliverable": "Page wireframe, updated copy, and suggested media layout.",
+    "targetDate": "2026-12-05",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-7',
-    title: 'Social Media & Email Newsletter Drafts',
-    category: 'Website & Online',
-    description: 'Prepare monthly updates for the WCT email list and craft 4-6 friendly social media posts announcing work sessions and volunteer shout-outs.',
-    deliverable: '4 ready-to-post social drafts + 1 monthly newsletter draft.',
-    targetDate: '2026-11-18',
-    status: 'Open',
-    owner: null,
-    helpers: [],
-    updates: []
+    "id": "wct-task-7",
+    "title": "Social Media & Email Newsletter Drafts",
+    "category": "Website & Online",
+    "description": "Prepare monthly updates for the WCT email list and craft 4-6 friendly social media posts announcing work sessions and volunteer shout-outs.",
+    "deliverable": "4 ready-to-post social drafts + 1 monthly newsletter draft.",
+    "targetDate": "2026-11-18",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-8',
-    title: 'Community-Friendly Architectural Summary',
-    category: 'Architectural Review',
-    description: 'Translate the architect’s technical plans and blueprints into everyday language and simple visuals that show what the renovated schoolhouse could become.',
-    deliverable: '1-page "Before, After & Future Vision" visual overview for town meetings.',
-    targetDate: '2026-12-01',
-    status: 'Open',
-    owner: null,
-    helpers: [],
-    updates: []
+    "id": "wct-task-8",
+    "title": "Community-Friendly Architectural Summary",
+    "category": "Architectural Review",
+    "description": "Translate the architect’s technical plans and blueprints into everyday language and simple visuals that show what the renovated schoolhouse could become.",
+    "deliverable": "1-page \"Before, After & Future Vision\" visual overview for town meetings.",
+    "targetDate": "2026-12-01",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-9',
-    title: 'Independent Architectural Plan Review',
-    category: 'Architectural Review',
-    description: 'Review the architect plans critically with a neighbor architect or knowledgeable local builder and compile specific clarification questions.',
-    deliverable: 'Written list of review notes, questions, and recommendations for the WCT board.',
-    targetDate: '2026-11-28',
-    status: 'In Progress',
-    owner: { name: 'Peter Wright', email: 'p.wright.arch@example.com', phone: '802-555-0188' },
-    helpers: [],
-    updates: [
-      { id: 'u3', author: 'Peter Wright', text: 'Reviewed foundation and roof beam drawings. Drafting 5 targeted queries.', date: '2026-10-24' }
-    ]
+    "id": "wct-task-9",
+    "title": "Independent Architectural Plan Review",
+    "category": "Architectural Review",
+    "description": "Review the architect plans critically with a neighbor architect or knowledgeable local builder and compile specific clarification questions.",
+    "deliverable": "Written list of review notes, questions, and recommendations for the WCT board.",
+    "targetDate": "2026-11-28",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-10',
-    title: 'Schoolhouse Clean-Out Crew Coordination',
-    category: 'Physical Work',
-    description: 'Break the interior clean-out project into small, manageable jobs and organize 2-3 volunteer work mornings rather than one overwhelming cleanup.',
-    deliverable: 'Work crew plan, safety guidelines, and schedule for small team clean-out sessions.',
-    targetDate: '2026-11-10',
-    status: 'Needs Help',
-    owner: { name: 'Mark Olsen', email: 'molsen@example.com', phone: '802-555-0129' },
-    helpers: [{ name: 'Greg S.', email: 'greg@example.com' }],
-    updates: [
-      { id: 'u4', author: 'Mark Olsen', text: 'Need 2 more people with a pickup truck and heavy-duty work gloves for Saturday morning.', date: '2026-10-25' }
-    ]
+    "id": "wct-task-10",
+    "title": "Schoolhouse Clean-Out Crew Coordination",
+    "category": "Physical Work",
+    "description": "Break the interior clean-out project into small, manageable jobs and organize 2-3 volunteer work mornings rather than one overwhelming cleanup.",
+    "deliverable": "Work crew plan, safety guidelines, and schedule for small team clean-out sessions.",
+    "targetDate": "2026-11-10",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-11',
-    title: 'Historical Items Inventory & Photo Tagging',
-    category: 'Physical Work',
-    description: 'Carefully catalog, photograph, and label vintage fixtures, slate chalkboards, desks, and architectural salvage inside the building before work begins.',
-    deliverable: 'Photo log and numbered inventory list with condition notes.',
-    targetDate: '2026-11-12',
-    status: 'Completed',
-    owner: { name: 'Eleanor Vance', email: 'evance@example.com', phone: '802-555-0165' },
-    helpers: [{ name: 'Sarah Jenkins', email: 'sarah.j@example.com' }],
-    updates: [
-      { id: 'u5', author: 'Eleanor Vance', text: 'Completed inventory of 28 historical items and securely boxed chalkboards.', date: '2026-10-22' }
-    ]
+    "id": "wct-task-11",
+    "title": "Historical Items Inventory & Photo Tagging",
+    "category": "Physical Work",
+    "description": "Carefully catalog, photograph, and label vintage fixtures, slate chalkboards, desks, and architectural salvage inside the building before work begins.",
+    "deliverable": "Photo log and numbered inventory list with condition notes.",
+    "targetDate": "2026-11-12",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-12',
-    title: 'Exterior Grounds & Brush Clearing',
-    category: 'Physical Work',
-    description: 'Trim encroaching brush, clear safety walkways around the perimeter, and prepare the exterior grounds for contractor and visitor access.',
-    deliverable: 'Clean perimeter walkway and cleared brush piles prepped for chipping.',
-    targetDate: '2026-11-14',
-    status: 'Open',
-    owner: null,
-    helpers: [],
-    updates: []
+    "id": "wct-task-12",
+    "title": "Exterior Grounds & Brush Clearing",
+    "category": "Physical Work",
+    "description": "Trim encroaching brush, clear safety walkways around the perimeter, and prepare the exterior grounds for contractor and visitor access.",
+    "deliverable": "Clean perimeter walkway and cleared brush piles prepped for chipping.",
+    "targetDate": "2026-11-14",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-13',
-    title: 'Neighbor & Community Listening Sessions',
-    category: 'Community Outreach',
-    description: 'Meet with nearby neighbors and long-time residents to hear their thoughts, address questions, and gather local memories of the schoolhouse.',
-    deliverable: 'Summary memo of 10 resident conversations with community feedback and interest.',
-    targetDate: '2026-12-15',
-    status: 'Open',
-    owner: null,
-    helpers: [],
-    updates: []
+    "id": "wct-task-13",
+    "title": "Neighbor & Community Listening Sessions",
+    "category": "Community Outreach",
+    "description": "Meet with nearby neighbors and long-time residents to hear their thoughts, address questions, and gather local memories of the schoolhouse.",
+    "deliverable": "Summary memo of 10 resident conversations with community feedback and interest.",
+    "targetDate": "2026-12-15",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   },
   {
-    id: 'wct-task-14',
-    title: 'AI Media & Restoration Vision Renderings',
-    category: 'AI & Marketing',
-    description: 'Use AI tools to draft community flyers, generate conceptual visual renderings of the restored schoolhouse, and assemble a slideshow for meetings.',
-    deliverable: '3 visual vision concepts + draft slide presentation for the next public meeting.',
-    targetDate: '2026-11-22',
-    status: 'Open',
-    owner: null,
-    helpers: [],
-    updates: []
+    "id": "wct-task-14",
+    "title": "AI Media & Restoration Vision Renderings",
+    "category": "AI & Marketing",
+    "description": "Use AI tools to draft community flyers, generate conceptual visual renderings of the restored schoolhouse, and assemble a slideshow for meetings.",
+    "deliverable": "3 visual vision concepts + draft slide presentation for the next public meeting.",
+    "targetDate": "2026-11-22",
+    "status": "Open",
+    "owner": null,
+    "helpers": [],
+    "updates": []
   }
 ];
 
@@ -240,7 +239,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function App() {
-  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [tasks, setTasks] = useState(API_URL ? [] : INITIAL_TASKS);
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeStatus, setActiveStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -256,9 +255,8 @@ export default function App() {
   // Expanded updates accordion state
   const [expandedCards, setExpandedCards] = useState({});
 
-  // Firebase auth & firestore states
-  const [user, setUser] = useState(null);
-  const [isFirebaseEnabled, setIsFirebaseEnabled] = useState(false);
+  const [loading, setLoading] = useState(!!API_URL);
+  const [loadError, setLoadError] = useState('');
 
   // Show a momentary toast message
   const triggerToast = (msg) => {
@@ -268,122 +266,48 @@ export default function App() {
     }, 4000);
   };
 
-  // Firebase setup following Strict Rule 1, 2, 3
+  // Load tasks from the Google Sheet, and refresh every minute
   useEffect(() => {
-    try {
-      if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'wct-schoolhouse-tasks';
-
-        const initAuth = async () => {
-          try {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-              await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-              await signInAnonymously(auth);
-            }
-          } catch (e) {
-            console.error('Firebase Auth error, falling back to local memory state:', e);
-          }
-        };
-
-        initAuth();
-        const unsubscribe = onAuthStateChanged(auth, (u) => {
-          setUser(u);
-          if (u) {
-            setIsFirebaseEnabled(true);
-          }
-        });
-        return () => unsubscribe();
+    if (!API_URL) return;
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await fetch(API_URL + '?action=list');
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Could not load tasks');
+        if (!cancelled) {
+          setTasks(data.tasks);
+          setLoadError('');
+        }
+      } catch (e) {
+        if (!cancelled) setLoadError('Could not load the latest tasks. Please refresh the page in a minute.');
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    } catch (err) {
-      console.warn('Firebase config unavailable or failed; using in-memory state.', err);
-    }
+    };
+    load();
+    const timer = setInterval(load, 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
   }, []);
 
-  // Fetch / sync tasks from Firestore when user is authenticated
-  useEffect(() => {
-    if (!user || !isFirebaseEnabled) return;
+  // Save a change. Returns null on success, or an error message to show in the form.
+  const submitChange = async (action, payload, localTask, successMessage) => {
+    if (!API_URL) {
+      setTasks(prev => action === 'addTask' ? [localTask, ...prev] : prev.map(t => t.id === localTask.id ? localTask : t));
+      triggerToast(successMessage);
+      return null;
+    }
     try {
-      const firebaseConfig = JSON.parse(__firebase_config);
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-      const appId = typeof __app_id !== 'undefined' ? __app_id : 'wct-schoolhouse-tasks';
-      
-      // Strict Rule 1: public collection path
-      const tasksCol = collection(db, 'artifacts', appId, 'public', 'data', 'schoolhouse_tasks');
-
-      const unsubscribe = onSnapshot(
-        tasksCol,
-        (snapshot) => {
-          if (snapshot.empty) {
-            // Seed initial tasks if empty
-            INITIAL_TASKS.forEach(async (task) => {
-              try {
-                const docRef = doc(tasksCol, task.id);
-                await setDoc(docRef, task);
-              } catch (e) {
-                console.error('Seeding error:', e);
-              }
-            });
-          } else {
-            const remoteTasks = [];
-            snapshot.forEach((d) => {
-              remoteTasks.push({ id: d.id, ...d.data() });
-            });
-            // Sort by targetDate or title
-            remoteTasks.sort((a, b) => (a.targetDate || '').localeCompare(b.targetDate || ''));
-            setTasks(remoteTasks);
-          }
-        },
-        (error) => {
-          console.error('Firestore onSnapshot error:', error);
-        }
-      );
-      return () => unsubscribe();
+      const data = await callApi({ action, ...payload });
+      setTasks(data.tasks);
+      triggerToast(successMessage);
+      return null;
     } catch (e) {
-      console.error('Firestore listener error:', e);
+      return e.message || 'Something went wrong. Please try again.';
     }
-  }, [user, isFirebaseEnabled]);
-
-  // Helper to persist task updates (either Firestore or local state)
-  const saveTaskToStorage = async (updatedTask) => {
-    if (isFirebaseEnabled && user) {
-      try {
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'wct-schoolhouse-tasks';
-        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'schoolhouse_tasks', updatedTask.id);
-        await setDoc(docRef, updatedTask, { merge: true });
-        return;
-      } catch (e) {
-        console.error('Error saving to Firestore:', e);
-      }
-    }
-    // Fallback: local memory state
-    setTasks(prev => prev.map(t => t.id === updatedTask.id ? updatedTask : t));
-  };
-
-  const createNewTaskInStorage = async (newTask) => {
-    if (isFirebaseEnabled && user) {
-      try {
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'wct-schoolhouse-tasks';
-        const tasksCol = collection(db, 'artifacts', appId, 'public', 'data', 'schoolhouse_tasks');
-        const docRef = doc(tasksCol, newTask.id);
-        await setDoc(docRef, newTask);
-        return;
-      } catch (e) {
-        console.error('Error adding new task to Firestore:', e);
-      }
-    }
-    setTasks(prev => [newTask, ...prev]);
   };
 
   // Filter & Search Logic
@@ -583,6 +507,14 @@ export default function App() {
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
+        {!API_URL && (
+          <p className="mb-4 text-xs text-stone-500">Preview mode: sign-ups and updates are not being saved.</p>
+        )}
+        {loadError && (
+          <p className="mb-4 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{loadError}</p>
+        )}
+        {loading && <p className="mb-4 text-sm text-stone-500">Loading tasks…</p>}
+
         {/* Core Philosophy Banner (From Meeting Document) */}
         <div className="mb-6 bg-amber-50/90 border border-amber-200 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-stone-800">
           <div className="flex items-start gap-3">
@@ -701,7 +633,7 @@ export default function App() {
         {/* View Mode 1: Cards View */}
         {viewMode === 'cards' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredTasks.length === 0 ? (
+            {loading ? null : filteredTasks.length === 0 ? (
               <div className="col-span-full bg-white rounded-xl p-12 text-center border border-dashed border-stone-300">
                 <HelpCircle className="w-10 h-10 text-stone-400 mx-auto mb-3" />
                 <h3 className="text-base font-serif font-bold text-stone-700">No matching tasks found</h3>
@@ -1018,10 +950,10 @@ export default function App() {
         <SignupModal
           task={signupModalTask}
           onClose={() => setSignupModalTask(null)}
-          onSuccess={(updatedTask) => {
-            saveTaskToStorage(updatedTask);
-            setSignupModalTask(null);
-            triggerToast(`Thank you! You are now signed up for "${updatedTask.title}".`);
+          onSuccess={async (updatedTask, payload) => {
+            const err = await submitChange('signup', payload, updatedTask, `Thank you! You are now signed up for "${updatedTask.title}".`);
+            if (!err) setSignupModalTask(null);
+            return err;
           }}
         />
       )}
@@ -1031,10 +963,10 @@ export default function App() {
         <StatusModal
           task={statusModalTask}
           onClose={() => setStatusModalTask(null)}
-          onSuccess={(updatedTask) => {
-            saveTaskToStorage(updatedTask);
-            setStatusModalTask(null);
-            triggerToast(`Status update logged for "${updatedTask.title}".`);
+          onSuccess={async (updatedTask, payload) => {
+            const err = await submitChange('update', payload, updatedTask, `Status update logged for "${updatedTask.title}".`);
+            if (!err) setStatusModalTask(null);
+            return err;
           }}
         />
       )}
@@ -1043,10 +975,10 @@ export default function App() {
       {newTaskModalOpen && (
         <NewTaskModal
           onClose={() => setNewTaskModalOpen(false)}
-          onSuccess={(createdTask) => {
-            createNewTaskInStorage(createdTask);
-            setNewTaskModalOpen(false);
-            triggerToast(`New task "${createdTask.title}" created successfully!`);
+          onSuccess={async (createdTask, payload) => {
+            const err = await submitChange('addTask', payload, createdTask, `New task "${createdTask.title}" created successfully!`);
+            if (!err) setNewTaskModalOpen(false);
+            return err;
           }}
         />
       )}
@@ -1092,8 +1024,9 @@ function SignupModal({ task, onClose, onSuccess }) {
   const [phone, setPhone] = useState('');
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) {
       setError('Please provide your name.');
@@ -1140,7 +1073,12 @@ function SignupModal({ task, onClose, onSuccess }) {
     });
     updatedTask.updates = updates;
 
-    onSuccess(updatedTask);
+    setBusy(true);
+    const err = await onSuccess(updatedTask, { taskId: task.id, role, name: name.trim(), email: email.trim(), phone: phone.trim(), note: note.trim() });
+    if (err) {
+      setError(err);
+      setBusy(false);
+    }
   };
 
   return (
@@ -1239,7 +1177,7 @@ function SignupModal({ task, onClose, onSuccess }) {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1">Availability or Brief Note (Optional)</label>
+            <label className="block text-xs font-semibold text-stone-700 mb-1">Availability or Brief Note (Optional, visible to everyone)</label>
             <textarea
               rows="2"
               placeholder="e.g., Available weekends or Tuesday evenings; have experience with grant spreadsheets..."
@@ -1259,7 +1197,8 @@ function SignupModal({ task, onClose, onSuccess }) {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-lg shadow-sm transition-colors"
+              disabled={busy}
+              className="disabled:opacity-60 px-5 py-2 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-lg shadow-sm transition-colors"
             >
               Confirm Volunteer Sign-Up
             </button>
@@ -1276,8 +1215,9 @@ function StatusModal({ task, onClose, onSuccess }) {
   const [authorName, setAuthorName] = useState(task.owner?.name || '');
   const [updateText, setUpdateText] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!updateText.trim()) {
       setError('Please enter a note or progress update.');
@@ -1296,7 +1236,12 @@ function StatusModal({ task, onClose, onSuccess }) {
     });
     updatedTask.updates = currentUpdates;
 
-    onSuccess(updatedTask);
+    setBusy(true);
+    const err = await onSuccess(updatedTask, { taskId: task.id, status: newStatus, author: authorName.trim(), text: updateText.trim() });
+    if (err) {
+      setError(err);
+      setBusy(false);
+    }
   };
 
   return (
@@ -1343,7 +1288,7 @@ function StatusModal({ task, onClose, onSuccess }) {
             <label className="block text-xs font-semibold text-stone-700 mb-1">Your Name</label>
             <input
               type="text"
-              placeholder="e.g., Sarah Jenkins"
+              placeholder="e.g., Jane Smith"
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
               className="w-full text-xs px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-800 focus:bg-white"
@@ -1372,7 +1317,8 @@ function StatusModal({ task, onClose, onSuccess }) {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-lg shadow-sm transition-colors"
+              disabled={busy}
+              className="disabled:opacity-60 px-5 py-2 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-lg shadow-sm transition-colors"
             >
               Post Status Note
             </button>
@@ -1392,9 +1338,11 @@ function NewTaskModal({ onClose, onSuccess }) {
   const [targetDate, setTargetDate] = useState('');
   const [ownerName, setOwnerName] = useState('');
   const [ownerEmail, setOwnerEmail] = useState('');
+  const [passcode, setPasscode] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !deliverable.trim()) {
       setError('Task Title and Concrete Deliverable are required.');
@@ -1421,7 +1369,12 @@ function NewTaskModal({ onClose, onSuccess }) {
       ]
     };
 
-    onSuccess(newTask);
+    setBusy(true);
+    const err = await onSuccess(newTask, { title: title.trim(), category, description: description.trim(), deliverable: deliverable.trim(), targetDate, ownerName: ownerName.trim(), ownerEmail: ownerEmail.trim(), key: passcode });
+    if (err) {
+      setError(err);
+      setBusy(false);
+    }
   };
 
   return (
@@ -1505,6 +1458,18 @@ function NewTaskModal({ onClose, onSuccess }) {
             />
           </div>
 
+          <div>
+            <label className="block text-xs font-semibold text-stone-700 mb-1">Organizer Passcode{API_URL ? ' *' : ''}</label>
+            <input
+              type="password"
+              required={!!API_URL}
+              placeholder="Only WCT organizers can add tasks"
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+              className="w-full text-xs px-3 py-2 bg-stone-50 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-800 focus:bg-white"
+            />
+          </div>
+
           <div className="pt-2 border-t border-stone-100">
             <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider block mb-2">Pre-assign an Owner (Optional)</span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1535,7 +1500,8 @@ function NewTaskModal({ onClose, onSuccess }) {
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-lg shadow-sm transition-colors"
+              disabled={busy}
+              className="disabled:opacity-60 px-5 py-2 text-xs font-bold text-white bg-emerald-800 hover:bg-emerald-900 rounded-lg shadow-sm transition-colors"
             >
               Create Task
             </button>
