@@ -1,6 +1,3 @@
 node_modules
 dist
-.env
-.env.*
-.vercel
-!.env.example
+.DS_Store

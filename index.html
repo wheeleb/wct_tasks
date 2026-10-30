@@ -1,13 +1,410 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Old Schoolhouse Project Volunteer Task Hub | Wolcott Community Trust</title>
-    <meta name="description" content="Volunteer task board for the Wolcott Community Trust Old Schoolhouse restoration project." />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WCT Volunteer Task Hub</title>
+<meta name="description" content="Pick a volunteer task for the Wolcott Community Trust, follow the steps, get help, and log your progress.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAFAF7; --ink:#1B1F1D; --muted:#5F6762; --line:#E4E6E1; --line2:#B9BEB8;
+  --acc:#2F5D4A; --acc-l:#E8F0EC; --chip:#F0F1EE; --white:#fff;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* nav */
+.nav{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:18px 80px;background:var(--white);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:600;font-size:17px}
+.logo{width:34px;height:34px;border-radius:8px;background:var(--acc);color:#fff;display:grid;place-items:center;font-weight:700;font-size:17px}
+.nav-r{display:flex;align-items:center;gap:32px}
+.nav-r a.link{font-size:15px;font-weight:500;color:var(--muted)}
+.nav-r a.link:hover{color:var(--ink)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 22px;border-radius:8px;font-size:15px;font-weight:500;border:1px solid var(--line);background:var(--white);color:var(--ink);transition:background .15s,border-color .15s}
+.btn:hover{border-color:var(--line2)}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.primary:hover{background:#264d3d}
+.btn.block{width:100%;padding:12px 0}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1fr 460px;gap:80px;align-items:center;padding:96px 80px}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--acc);margin:0 0 24px}
+h1{font-size:56px;line-height:64px;font-weight:600;margin:0 0 24px;letter-spacing:-.01em}
+.lede{font-size:19px;line-height:30px;color:var(--muted);margin:0 0 24px}
+.ctas{display:flex;gap:12px;flex-wrap:wrap}
+.how{background:var(--white);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.how .row{display:flex;gap:16px;padding:24px 28px;border-bottom:1px solid var(--line)}
+.how .row:last-child{border-bottom:0}
+.num{flex:none;width:34px;height:34px;border-radius:50%;background:var(--acc-l);color:var(--acc);display:grid;place-items:center;font-weight:600;font-size:15px}
+.how h3{margin:0 0 4px;font-size:17px;font-weight:600}
+.how p{margin:0;font-size:15px;line-height:22px;color:var(--muted)}
+
+/* tasks */
+.tasks{padding:72px 80px}
+.tasks h2{font-size:32px;font-weight:600;margin:0 0 8px}
+.sub{font-size:16px;color:var(--muted);margin:0 0 32px}
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:32px}
+.chip{padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--white);color:var(--muted);font-size:14px;font-weight:500}
+.chip:hover{border-color:var(--line2)}
+.chip[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:#fff}
+.board{display:grid;grid-template-columns:1fr 460px;gap:40px;align-items:start}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.card{display:flex;flex-direction:column;gap:12px;padding:24px;text-align:left;background:var(--white);border:1px solid var(--line);border-radius:14px;transition:border-color .15s,box-shadow .15s}
+.card:hover{border-color:var(--line2)}
+.card[aria-pressed="true"]{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.card .top,.panel .top{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%}
+.cat{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.card h3{margin:0;font-size:18px;line-height:26px;font-weight:600}
+.card p{margin:0;font-size:14px;line-height:21px;color:var(--muted)}
+.meta-line{font-size:13px;font-weight:500;color:var(--muted)}
+.bar{height:4px;border-radius:2px;background:var(--chip);overflow:hidden;width:100%;margin-top:2px}
+.bar i{display:block;height:100%;background:var(--acc)}
+
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.9}
+.s-not-started{background:#F0F1EE;color:#5F6762}.s-not-started::before{background:#9AA19C}
+.s-in-progress{background:#FBF3E1;color:#8A5A0B}.s-in-progress::before{background:#D69A2D}
+.s-needs-help{background:#FBEAE8;color:#A33A30}.s-needs-help::before{background:#D1574B}
+.s-done{background:#E8F0EC;color:#2F5D4A}.s-done::before{background:#3E8A6B}
+
+/* detail */
+.panel{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:24px}
+.panel h3.title{margin:0;font-size:26px;line-height:34px;font-weight:600}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{padding:5px 10px;border-radius:6px;background:var(--chip);color:var(--muted);font-size:13px;font-weight:500}
+.desc{margin:0;font-size:15px;line-height:23px;color:var(--muted)}
+.lab{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.lab .count{font-size:13px;letter-spacing:0;text-transform:none;font-weight:500;color:var(--acc)}
+.steps{display:flex;flex-direction:column;gap:6px}
+.steps .lab{margin-bottom:6px}
+.step{display:flex;align-items:center;gap:12px;padding:6px 4px;margin:0 -4px;border:0;background:none;text-align:left;border-radius:6px;font-size:15px;font-weight:500;color:var(--ink)}
+.step:hover{background:var(--chip)}
+.step[aria-checked="true"]{font-weight:400;color:var(--muted)}
+.box{flex:none;width:20px;height:20px;border-radius:5px;border:1px solid var(--line2);background:var(--white);display:grid;place-items:center}
+.step[aria-checked="true"] .box{background:var(--acc);border-color:var(--acc)}
+.box svg{display:none}
+.step[aria-checked="true"] .box svg{display:block}
+.helper{background:var(--acc-l);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.helper h4{margin:0;font-size:16px;font-weight:600}
+.helper p{margin:0;font-size:14px;line-height:21px;color:var(--muted)}
+.helper .who{display:flex;align-items:center;gap:12px;font-size:13px;font-weight:500;color:var(--muted)}
+.avs{display:flex}
+.av{width:30px;height:30px;border-radius:50%;background:var(--white);border:1px solid var(--acc);color:var(--acc);display:grid;place-items:center;font-size:12px;font-weight:600;margin-right:-8px}
+.avs .av:last-child{margin-right:0}
+.btn.requested{background:var(--white);border-color:var(--acc);color:var(--acc)}
+.seg{display:flex;gap:4px;padding:4px;background:var(--chip);border-radius:10px;margin-top:12px}
+.seg button{flex:1;min-width:0;padding:9px 2px;border:1px solid transparent;border-radius:7px;background:none;font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap}
+.seg button[aria-checked="true"]{background:var(--white);border-color:var(--line);color:var(--ink);font-weight:600}
+.log{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:14px}
+.log li{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:500}
+.log li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--acc)}
+.log li span.t{flex:1}
+.log li time{font-size:13px;font-weight:400;color:var(--muted);white-space:nowrap}
+.saved{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;background:var(--chip);font-size:13px;color:var(--muted)}
+.saved::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:#3E8A6B}
+.saved.err::before{background:#D1574B}
+
+.foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:36px 80px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.foot nav{display:flex;gap:24px;font-weight:500}
+.foot button{border:0;background:none;padding:0;font-weight:500;color:var(--muted)}
+.foot a:hover,.foot button:hover{color:var(--ink)}
+
+@media (max-width:1180px){
+  .nav,.hero,.tasks,.foot{padding-left:40px;padding-right:40px}
+  .hero{grid-template-columns:1fr;gap:48px;padding-top:64px;padding-bottom:64px}
+  .board{grid-template-columns:1fr}
+  h1{font-size:44px;line-height:52px}
+}
+@media (max-width:720px){
+  .nav,.hero,.tasks,.foot{padding-left:20px;padding-right:20px}
+  .nav-r a.link{display:none}
+  .nav-r{gap:12px}
+  .brand span.name{font-size:15px}
+  h1{font-size:36px;line-height:44px}
+  .lede{font-size:17px;line-height:27px}
+  .grid{grid-template-columns:1fr}
+  .tasks{padding-top:48px;padding-bottom:48px}
+  .panel{padding:20px}
+  .how .row{padding:20px}
+  .seg{flex-wrap:wrap}
+  .seg button{flex:1 1 45%}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <a class="brand" href="#top" aria-label="Wolcott Community Trust home"><span class="logo" aria-hidden="true">W</span><span class="name">Wolcott Community Trust</span></a>
+  <div class="nav-r">
+    <a class="link" href="#tasks">Tasks</a>
+    <a class="link" href="#how">How it works</a>
+    <a class="link" href="#helper-box" data-action="goto-helper">Helpers</a>
+    <button class="btn" data-action="ask-help" type="button">Ask for help</button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div>
+      <p class="eyebrow">VOLUNTEER TASK HUB</p>
+      <h1>Pick a task. Do it with help close by.</h1>
+      <p class="lede">Wolcott Community Trust runs on neighbors. Choose a task that fits your time and skills, follow the steps, and log your progress. A volunteer or member helper is one click away.</p>
+      <div class="ctas">
+        <a class="btn primary" href="#tasks">Browse open tasks</a>
+        <a class="btn" href="#how">How it works</a>
+      </div>
+    </div>
+    <div class="how" id="how">
+      <div class="row"><span class="num">1</span><div><h3>Choose</h3><p>Pick an open task by time, place, or skill.</p></div></div>
+      <div class="row"><span class="num">2</span><div><h3>Do</h3><p>Follow plain-language steps. Ask a helper any time.</p></div></div>
+      <div class="row"><span class="num">3</span><div><h3>Log</h3><p>Mark your status as you go. Progress saves automatically.</p></div></div>
+    </div>
+  </section>
+
+  <section class="tasks" id="tasks" aria-labelledby="tasks-h">
+    <h2 id="tasks-h">Open tasks</h2>
+    <p class="sub">Select a task to see the steps, get help, and log your progress.</p>
+    <div class="filters" id="filters" role="group" aria-label="Filter tasks"></div>
+    <div class="board">
+      <div class="grid" id="grid"></div>
+      <aside class="panel" id="detail" aria-live="polite" aria-label="Task detail"></aside>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>© 2026 Wolcott Community Trust · Wolcott, Vermont</span>
+  <nav aria-label="Footer">
+    <a href="#">Contact</a>
+    <a href="#">Privacy</a>
+    <a href="#helper-box" data-action="goto-helper">Become a helper</a>
+    <button type="button" data-action="reset">Reset sample data</button>
+  </nav>
+</footer>
+
+<script>
+(function(){
+  'use strict';
+  var KEY = 'wct_task_hub_v1';
+  var STATUSES = ['Not started','In progress','Needs help','Done'];
+  var FILTERS = ['All','Remote','On-site','Archive','Events','Grounds'];
+  var CHECK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 6.2l2.4 2.4 4.6-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function slug(s){return s.toLowerCase().replace(/\s+/g,'-');}
+  function steps(list,doneCount){return list.map(function(t,i){return {text:t,done:i<doneCount};});}
+
+  function seed(){
+    var n = Date.now(), M = 60000;
+    return {
+      selectedId:'t1', filter:'All',
+      tasks:[
+        {id:'t1',cat:'Archive',loc:'Remote',time:'2 hrs',title:'Scan and tag historical photos',blurb:'Digitize a batch of 10 local photos and add captions.',
+          tags:['No experience needed'],
+          desc:'Help preserve Wolcott’s story. Scan a batch of 10 photos from the collection, then add a short caption to each so neighbors can find them later.',
+          status:'In progress',helperRequested:false,
+          steps:steps(['Download your batch of 10 photos','Scan each photo at 600 dpi','Add a caption: who, where, and year','Upload the batch and mark it complete'],2),
+          log:[{t:n-14*M,text:'Completed step 2 of 4'},{t:n-28*M,text:'Status set to In progress'},{t:n-30*M,text:'Task selected'}]},
+        {id:'t2',cat:'Grounds',loc:'On-site',time:'3 hrs',title:'Tidy the Old Schoolhouse',blurb:'Sweep, sort supplies, and set up the volunteer room.',
+          tags:['Bring work gloves'],
+          desc:'Get the Old Schoolhouse ready for the next group of volunteers. Light cleaning and organizing, no special skills needed.',
+          status:'Not started',helperRequested:false,
+          steps:steps(['Check in with the site lead','Sweep and dust the main room','Sort supplies into labeled bins','Set up tables and chairs'],0),log:[]},
+        {id:'t3',cat:'Data',loc:'Remote',time:'1 hr',title:'Enter records into the Knowledge Map',blurb:'Add town documents to the shared civic data map.',
+          tags:['Basic spreadsheet skills'],
+          desc:'Add documents to the Trust’s shared Knowledge Map. Each record needs a title, date, and source so it can be found and trusted later.',
+          status:'Needs help',helperRequested:true,
+          steps:steps(['Open the Knowledge Map workbook','Pick a document from the intake list','Enter title, date, and source','Mark the record as reviewed'],1),
+          log:[{t:n-3*60*M,text:'Helper requested'},{t:n-3*60*M-5*M,text:'Status set to Needs help'}]},
+        {id:'t4',cat:'Events',loc:'On-site',time:'2 hrs',title:'Welcome table at the bridge celebration',blurb:'Greet neighbors and hand out programs.',
+          tags:['Friendly faces wanted'],
+          desc:'Be the first friendly face at the celebration. Greet neighbors, hand out programs, and point people toward the event.',
+          status:'Not started',helperRequested:false,
+          steps:steps(['Pick up programs and name tags','Set up the welcome table','Greet and direct neighbors','Count leftover programs and pack up'],0),log:[]},
+        {id:'t5',cat:'Writing',loc:'Remote',time:'45 min',title:'Proofread the community newsletter',blurb:'Read through the draft and flag typos.',
+          tags:['Sharp eyes'],
+          desc:'Read the newsletter draft once, flag typos and unclear lines, and send your notes to the editor. No rewriting needed.',
+          status:'Done',helperRequested:false,
+          steps:steps(['Open the newsletter draft','Read for typos and unclear lines','Add comments, don’t rewrite','Send your notes to the editor'],4),
+          log:[{t:n-26*60*M,text:'Status set to Done'},{t:n-27*60*M,text:'Task selected'}]},
+        {id:'t6',cat:'Archive',loc:'On-site',time:'1.5 hrs',title:'Photograph School Street landmarks',blurb:'Capture dated photos for the historical collection.',
+          tags:['Phone camera is fine'],
+          desc:'Take clear daytime photos of landmarks along School Street so the Trust can show how the town looks today.',
+          status:'Not started',helperRequested:false,
+          steps:steps(['Review the landmark list','Photograph each site in daylight','Note the date and location','Upload your photos'],0),log:[]}
+      ]
+    };
+  }
+
+  var state, lastSaved = null, saveError = false;
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(KEY);
+      if(raw){
+        var s = JSON.parse(raw);
+        if(s && Array.isArray(s.tasks) && s.tasks.length) return s;
+      }
+    }catch(e){}
+    return seed();
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); lastSaved = Date.now(); saveError = false; }
+    catch(e){ saveError = true; }
+  }
+
+  function byId(id){return state.tasks.filter(function(t){return t.id===id;})[0];}
+  function sel(){return byId(state.selectedId) || state.tasks[0];}
+  function doneCount(t){return t.steps.filter(function(s){return s.done;}).length;}
+  function addLog(t,text){t.log.unshift({t:Date.now(),text:text}); if(t.log.length>50) t.log.length=50;}
+
+  function clock(d){
+    var h=d.getHours(), m=d.getMinutes(), ap=h>=12?'PM':'AM';
+    h=h%12||12; return h+':'+(m<10?'0':'')+m+' '+ap;
+  }
+  function fmt(ts){
+    var d=new Date(ts), n=new Date();
+    var same=d.toDateString()===n.toDateString();
+    var y=new Date(n.getTime()-86400000).toDateString()===d.toDateString();
+    if(same) return 'Today, '+clock(d);
+    if(y) return 'Yesterday, '+clock(d);
+    return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+', '+clock(d);
+  }
+
+  function pill(s){return '<span class="pill s-'+slug(s)+'">'+esc(s)+'</span>';}
+
+  function visible(t){
+    var f=state.filter;
+    return f==='All' || t.loc===f || t.cat===f;
+  }
+
+  function render(){
+    var active = document.activeElement && document.activeElement.getAttribute && document.activeElement.getAttribute('data-focus');
+
+    document.getElementById('filters').innerHTML = FILTERS.map(function(f){
+      return '<button type="button" class="chip" data-action="filter" data-value="'+esc(f)+'" data-focus="f-'+esc(f)+'" aria-pressed="'+(state.filter===f)+'">'+esc(f)+'</button>';
+    }).join('');
+
+    var list = state.tasks.filter(visible);
+    document.getElementById('grid').innerHTML = list.length ? list.map(function(t){
+      var dc=doneCount(t), n=t.steps.length;
+      var meta=[t.time,t.loc].concat(t.helperRequested?['Helper requested']:['Helper available']).join(' · ');
+      return '<button type="button" class="card" data-action="select" data-id="'+t.id+'" data-focus="c-'+t.id+'" aria-pressed="'+(t.id===state.selectedId)+'">'+
+        '<span class="top"><span class="cat">'+esc(t.cat)+'</span>'+pill(t.status)+'</span>'+
+        '<h3>'+esc(t.title)+'</h3><p>'+esc(t.blurb)+'</p>'+
+        '<span class="meta-line">'+esc(meta)+'</span>'+
+        '<span class="bar" role="img" aria-label="'+dc+' of '+n+' steps done"><i style="width:'+(n?Math.round(dc/n*100):0)+'%"></i></span>'+
+      '</button>';
+    }).join('') : '<p class="sub">No tasks match this filter.</p>';
+
+    var t=sel(), dc=doneCount(t), n=t.steps.length;
+    var tags=[t.time,t.loc].concat(t.tags||[]);
+    document.getElementById('detail').innerHTML =
+      '<div class="top"><span class="cat">'+esc(t.cat)+'</span>'+pill(t.status)+'</div>'+
+      '<h3 class="title">'+esc(t.title)+'</h3>'+
+      '<div class="tags">'+tags.map(function(x){return '<span class="tag">'+esc(x)+'</span>';}).join('')+'</div>'+
+      '<p class="desc">'+esc(t.desc)+'</p>'+
+      '<div class="steps" role="group" aria-label="Steps"><div class="lab"><span>Steps</span><span class="count">'+dc+' of '+n+' done</span></div>'+
+        t.steps.map(function(s,i){
+          return '<button type="button" class="step" role="checkbox" aria-checked="'+s.done+'" data-action="step" data-i="'+i+'" data-focus="s-'+i+'"><span class="box">'+CHECK+'</span><span>'+esc(s.text)+'</span></button>';
+        }).join('')+
+      '</div>'+
+      '<div class="helper" id="helper-box"><h4>Need a hand?</h4>'+
+        '<p>Ask a volunteer or member helper to walk you through it by chat or phone.</p>'+
+        '<div class="who"><span class="avs" aria-hidden="true"><span class="av">A</span><span class="av">M</span><span class="av">J</span></span><span>3 helpers available</span></div>'+
+        (t.helperRequested
+          ? '<button type="button" class="btn block requested" data-action="helper" data-focus="helper">Helper requested · cancel request</button>'
+          : '<button type="button" class="btn primary block" data-action="helper" data-focus="helper">Request a helper</button>')+
+      '</div>'+
+      '<div><div class="lab"><span id="st-l">Your status</span></div>'+
+        '<div class="seg" role="radiogroup" aria-labelledby="st-l">'+
+        STATUSES.map(function(s){
+          return '<button type="button" role="radio" aria-checked="'+(t.status===s)+'" data-action="status" data-value="'+esc(s)+'" data-focus="g-'+slug(s)+'">'+esc(s)+'</button>';
+        }).join('')+'</div></div>'+
+      '<div><div class="lab"><span>Activity log</span></div>'+
+        (t.log.length
+          ? '<ul class="log">'+t.log.slice(0,5).map(function(e){return '<li><span class="t">'+esc(e.text)+'</span><time datetime="'+new Date(e.t).toISOString()+'">'+esc(fmt(e.t))+'</time></li>';}).join('')+'</ul>'
+          : '<p class="desc" style="margin-top:12px">Nothing logged yet. Check off a step or set your status to begin.</p>')+
+      '</div>'+
+      '<div class="saved'+(saveError?' err':'')+'" role="status">'+
+        (saveError ? 'Couldn’t save in this browser. Changes will be lost when you close the page.'
+          : (lastSaved ? 'Saved at '+esc(clock(new Date(lastSaved)))+'. Your progress stays on this device.' : 'Saved automatically. Pick up where you left off on this device.'))+
+      '</div>';
+
+    if(active){
+      var el=document.querySelector('[data-focus="'+active+'"]');
+      if(el) el.focus({preventScroll:true});
+    }
+  }
+
+  function commit(){ save(); render(); }
+
+  var actions = {
+    filter:function(el){ state.filter=el.getAttribute('data-value'); commit(); },
+    select:function(el){ state.selectedId=el.getAttribute('data-id'); commit();
+      if(window.matchMedia('(max-width:1180px)').matches){ document.getElementById('detail').scrollIntoView({behavior:'smooth',block:'start'}); } },
+    step:function(el){
+      var t=sel(), i=+el.getAttribute('data-i'), s=t.steps[i]; if(!s) return;
+      s.done=!s.done;
+      var dc=doneCount(t), n=t.steps.length;
+      addLog(t, s.done ? 'Completed step '+(i+1)+' of '+n : 'Reopened step '+(i+1)+' of '+n);
+      if(dc===n && t.status!=='Done'){ t.status='Done'; addLog(t,'Status set to Done'); }
+      else if(dc<n && t.status==='Done'){ t.status='In progress'; addLog(t,'Status set to In progress'); }
+      else if(dc>0 && t.status==='Not started'){ t.status='In progress'; addLog(t,'Status set to In progress'); }
+      commit();
+    },
+    status:function(el){
+      var t=sel(), v=el.getAttribute('data-value'); if(t.status===v) return;
+      t.status=v; addLog(t,'Status set to '+v); commit();
+    },
+    helper:function(){
+      var t=sel();
+      if(!t.helperRequested){
+        t.helperRequested=true; addLog(t,'Helper requested');
+        if(t.status!=='Done' && t.status!=='Needs help'){ t.status='Needs help'; addLog(t,'Status set to Needs help'); }
+      }else{
+        t.helperRequested=false; addLog(t,'Helper request cancelled');
+        if(t.status==='Needs help'){ t.status=doneCount(t)>0?'In progress':'Not started'; addLog(t,'Status set to '+t.status); }
+      }
+      commit();
+    },
+    'ask-help':function(){ goHelper(); },
+    'goto-helper':function(el,ev){ ev.preventDefault(); goHelper(); },
+    reset:function(){
+      if(!window.confirm('Reset all tasks to the sample data? Your saved progress on this device will be cleared.')) return;
+      state=seed(); lastSaved=null; commit();
+    }
+  };
+
+  function goHelper(){
+    var b=document.getElementById('helper-box'); if(!b) return;
+    b.scrollIntoView({behavior:'smooth',block:'center'});
+    var btn=b.querySelector('button'); if(btn) btn.focus({preventScroll:true});
+  }
+
+  document.addEventListener('click',function(ev){
+    var el=ev.target.closest('[data-action]');
+    if(!el) return;
+    var fn=actions[el.getAttribute('data-action')];
+    if(fn) fn(el,ev);
+  });
+
+  state=load();
+  if(!byId(state.selectedId)) state.selectedId=state.tasks[0].id;
+  if(FILTERS.indexOf(state.filter)<0) state.filter='All';
+  render();
+})();
+</script>
+</body>
 </html>

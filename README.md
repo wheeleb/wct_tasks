@@ -1,22 +1,15 @@
 # WCT Tasks
 
-Volunteer task board for the Wolcott Community Trust Old Schoolhouse project.
+Volunteer task hub for the Wolcott Community Trust. A single static page (`index.html`): pick a task, follow the steps, request a helper, and log status. Progress is saved in the visitor's browser (localStorage).
 
 ## Run locally
 
-    npm install
-    npm run dev
-
-## Build
-
-    npm run build
-
-The site is built with Vite, React and Tailwind. The dashboard lives in `src/App.tsx`; task text is in the `INITIAL_TASKS` list at the top of that file.
+Open `index.html` in a browser, or run `npx serve .`.
 
 ## Deploy on Vercel
 
-Import this repository at vercel.com/new. Vercel detects Vite automatically (build command `npm run build`, output directory `dist`).
+No framework needed. `npm run build` copies `index.html` to `dist/`, which matches Vercel's default output directory.
 
-## Saving volunteer sign-ups
+## Editing tasks
 
-Sign-ups and updates are saved in a Google Sheet. See `SHEET_SETUP.md` for the setup steps. Until `VITE_SHEET_API_URL` is set, the site runs in preview mode and nothing is saved.
+Sample tasks live in the `seed()` function in the `<script>` block of `index.html`.
