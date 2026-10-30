@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WCT Volunteer Task Hub</title>
-<meta name="description" content="Pick a volunteer task for the Wolcott Community Trust, follow the steps, get help, and log your progress.">
+<title>Volunteer Task Hub | Wolcott Community Trust</title>
+<meta name="description" content="Pick a volunteer task for the Wolcott Community Trust Old Schoolhouse project, get help, and log your progress.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#FAFAF7; --ink:#1B1F1D; --muted:#5F6762; --line:#E4E6E1; --line2:#B9BEB8;
-  --acc:#2F5D4A; --acc-l:#E8F0EC; --chip:#F0F1EE; --white:#fff;
+  --acc:#2F5D4A; --acc-l:#E8F0EC; --chip:#F0F1EE; --white:#fff; --err:#A33A30;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-button{font:inherit;color:inherit;cursor:pointer}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
 a{color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
-.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* nav */
 .nav{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:18px 80px;background:var(--white);border-bottom:1px solid var(--line)}
@@ -32,9 +32,11 @@ a{color:inherit;text-decoration:none}
 /* buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 22px;border-radius:8px;font-size:15px;font-weight:500;border:1px solid var(--line);background:var(--white);color:var(--ink);transition:background .15s,border-color .15s}
 .btn:hover{border-color:var(--line2)}
+.btn:disabled{opacity:.6;cursor:default}
 .btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
 .btn.primary:hover{background:#264d3d}
 .btn.block{width:100%;padding:12px 0}
+.btn.sm{padding:10px 16px;font-size:14px}
 
 /* hero */
 .hero{display:grid;grid-template-columns:1fr 460px;gap:80px;align-items:center;padding:96px 80px}
@@ -53,6 +55,8 @@ h1{font-size:56px;line-height:64px;font-weight:600;margin:0 0 24px;letter-spacin
 .tasks{padding:72px 80px}
 .tasks h2{font-size:32px;font-weight:600;margin:0 0 8px}
 .sub{font-size:16px;color:var(--muted);margin:0 0 32px}
+.banner{margin:0 0 24px;padding:12px 16px;border-radius:10px;background:#FBF3E1;color:#8A5A0B;font-size:14px;line-height:21px}
+.banner.err{background:#FBEAE8;color:var(--err)}
 .filters{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:32px}
 .chip{padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--white);color:var(--muted);font-size:14px;font-weight:500}
 .chip:hover{border-color:var(--line2)}
@@ -67,8 +71,7 @@ h1{font-size:56px;line-height:64px;font-weight:600;margin:0 0 24px;letter-spacin
 .card h3{margin:0;font-size:18px;line-height:26px;font-weight:600}
 .card p{margin:0;font-size:14px;line-height:21px;color:var(--muted)}
 .meta-line{font-size:13px;font-weight:500;color:var(--muted)}
-.bar{height:4px;border-radius:2px;background:var(--chip);overflow:hidden;width:100%;margin-top:2px}
-.bar i{display:block;height:100%;background:var(--acc)}
+.empty{grid-column:1/-1;margin:0;font-size:15px;color:var(--muted)}
 
 .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap}
 .pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.9}
@@ -83,6 +86,8 @@ h1{font-size:56px;line-height:64px;font-weight:600;margin:0 0 24px;letter-spacin
 .tags{display:flex;flex-wrap:wrap;gap:8px}
 .tag{padding:5px 10px;border-radius:6px;background:var(--chip);color:var(--muted);font-size:13px;font-weight:500}
 .desc{margin:0;font-size:15px;line-height:23px;color:var(--muted)}
+.deliv{background:var(--chip);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.deliv .desc{color:var(--ink);font-size:14px;line-height:21px}
 .lab{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
 .lab .count{font-size:13px;letter-spacing:0;text-transform:none;font-weight:500;color:var(--acc)}
 .steps{display:flex;flex-direction:column;gap:6px}
@@ -94,6 +99,7 @@ h1{font-size:56px;line-height:64px;font-weight:600;margin:0 0 24px;letter-spacin
 .step[aria-checked="true"] .box{background:var(--acc);border-color:var(--acc)}
 .box svg{display:none}
 .step[aria-checked="true"] .box svg{display:block}
+.hint{margin:6px 0 0;font-size:13px;color:var(--muted)}
 .helper{background:var(--acc-l);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px}
 .helper h4{margin:0;font-size:16px;font-weight:600}
 .helper p{margin:0;font-size:14px;line-height:21px;color:var(--muted)}
@@ -101,18 +107,42 @@ h1{font-size:56px;line-height:64px;font-weight:600;margin:0 0 24px;letter-spacin
 .avs{display:flex}
 .av{width:30px;height:30px;border-radius:50%;background:var(--white);border:1px solid var(--acc);color:var(--acc);display:grid;place-items:center;font-size:12px;font-weight:600;margin-right:-8px}
 .avs .av:last-child{margin-right:0}
+.btns{display:flex;flex-direction:column;gap:10px}
 .btn.requested{background:var(--white);border-color:var(--acc);color:var(--acc)}
 .seg{display:flex;gap:4px;padding:4px;background:var(--chip);border-radius:10px;margin-top:12px}
 .seg button{flex:1;min-width:0;padding:9px 2px;border:1px solid transparent;border-radius:7px;background:none;font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap}
 .seg button[aria-checked="true"]{background:var(--white);border-color:var(--line);color:var(--ink);font-weight:600}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:13px;font-weight:500;color:var(--muted)}
+.in{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--white);font-size:15px}
+.in:focus{border-color:var(--acc)}
+textarea.in{resize:vertical;min-height:72px}
+.composer{display:flex;flex-direction:column;gap:10px;margin-top:12px}
 .log{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:14px}
-.log li{display:flex;align-items:center;gap:12px;font-size:14px;font-weight:500}
-.log li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--acc)}
-.log li span.t{flex:1}
+.log li{display:flex;align-items:flex-start;gap:12px;font-size:14px;font-weight:500;line-height:20px}
+.log li::before{content:"";flex:none;width:8px;height:8px;margin-top:6px;border-radius:50%;background:var(--acc)}
+.log li span.t{flex:1;min-width:0;overflow-wrap:anywhere}
+.log li span.t b{font-weight:600}
 .log li time{font-size:13px;font-weight:400;color:var(--muted);white-space:nowrap}
-.saved{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;background:var(--chip);font-size:13px;color:var(--muted)}
+.saved{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;background:var(--chip);font-size:13px;line-height:19px;color:var(--muted)}
 .saved::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:#3E8A6B}
+.saved.err{color:var(--err)}
 .saved.err::before{background:#D1574B}
+.saved.warn::before{background:#D69A2D}
+
+/* dialog */
+dialog{border:0;border-radius:16px;padding:0;width:min(480px,calc(100vw - 32px));box-shadow:0 20px 60px rgba(27,31,29,.25);color:var(--ink)}
+dialog::backdrop{background:rgba(27,31,29,.45)}
+.dlg{padding:28px;display:flex;flex-direction:column;gap:16px}
+.dlg h3{margin:0;font-size:22px;font-weight:600}
+.dlg .desc{font-size:14px;line-height:21px}
+.roles{display:flex;gap:10px}
+.role{flex:1;display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:14px;line-height:20px;cursor:pointer}
+.role input{margin-top:3px;accent-color:var(--acc)}
+.role small{display:block;color:var(--muted);font-size:12px}
+.role.off{opacity:.5;cursor:default}
+.formerr{margin:0;color:var(--err);font-size:14px}
+.dlg .row{display:flex;gap:10px;justify-content:flex-end}
 
 .foot{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:36px 80px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
 .foot nav{display:flex;gap:24px;font-weight:500}
@@ -134,10 +164,11 @@ h1{font-size:56px;line-height:64px;font-weight:600;margin:0 0 24px;letter-spacin
   .lede{font-size:17px;line-height:27px}
   .grid{grid-template-columns:1fr}
   .tasks{padding-top:48px;padding-bottom:48px}
-  .panel{padding:20px}
+  .panel,.dlg{padding:20px}
   .how .row{padding:20px}
   .seg{flex-wrap:wrap}
   .seg button{flex:1 1 45%}
+  .roles{flex-direction:column}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 </style>
@@ -149,7 +180,6 @@ h1{font-size:56px;line-height:64px;font-weight:600;margin:0 0 24px;letter-spacin
   <div class="nav-r">
     <a class="link" href="#tasks">Tasks</a>
     <a class="link" href="#how">How it works</a>
-    <a class="link" href="#helper-box" data-action="goto-helper">Helpers</a>
     <button class="btn" data-action="ask-help" type="button">Ask for help</button>
   </div>
 </header>
@@ -157,25 +187,26 @@ h1{font-size:56px;line-height:64px;font-weight:600;margin:0 0 24px;letter-spacin
 <main id="top">
   <section class="hero">
     <div>
-      <p class="eyebrow">VOLUNTEER TASK HUB</p>
+      <p class="eyebrow">OLD SCHOOLHOUSE VOLUNTEER TASK HUB</p>
       <h1>Pick a task. Do it with help close by.</h1>
-      <p class="lede">Wolcott Community Trust runs on neighbors. Choose a task that fits your time and skills, follow the steps, and log your progress. A volunteer or member helper is one click away.</p>
+      <p class="lede">Wolcott Community Trust runs on neighbors. Choose a small, clear task for the Old Schoolhouse project, follow the steps, and log your progress. A volunteer or member helper is one click away.</p>
       <div class="ctas">
         <a class="btn primary" href="#tasks">Browse open tasks</a>
         <a class="btn" href="#how">How it works</a>
       </div>
     </div>
     <div class="how" id="how">
-      <div class="row"><span class="num">1</span><div><h3>Choose</h3><p>Pick an open task by time, place, or skill.</p></div></div>
+      <div class="row"><span class="num">1</span><div><h3>Choose</h3><p>Pick a task by focus area, date, or who is already on it.</p></div></div>
       <div class="row"><span class="num">2</span><div><h3>Do</h3><p>Follow plain-language steps. Ask a helper any time.</p></div></div>
-      <div class="row"><span class="num">3</span><div><h3>Log</h3><p>Mark your status as you go. Progress saves automatically.</p></div></div>
+      <div class="row"><span class="num">3</span><div><h3>Log</h3><p>Post updates and set your status. Everyone sees the same progress.</p></div></div>
     </div>
   </section>
 
   <section class="tasks" id="tasks" aria-labelledby="tasks-h">
     <h2 id="tasks-h">Open tasks</h2>
-    <p class="sub">Select a task to see the steps, get help, and log your progress.</p>
-    <div class="filters" id="filters" role="group" aria-label="Filter tasks"></div>
+    <p class="sub">Select a task to see the details, sign up, get help, and log your progress.</p>
+    <div id="banner"></div>
+    <div class="filters" id="filters" role="group" aria-label="Filter tasks by focus area"></div>
     <div class="board">
       <div class="grid" id="grid"></div>
       <aside class="panel" id="detail" aria-live="polite" aria-label="Task detail"></aside>
@@ -188,222 +219,399 @@ h1{font-size:56px;line-height:64px;font-weight:600;margin:0 0 24px;letter-spacin
   <nav aria-label="Footer">
     <a href="#">Contact</a>
     <a href="#">Privacy</a>
-    <a href="#helper-box" data-action="goto-helper">Become a helper</a>
-    <button type="button" data-action="reset">Reset sample data</button>
+    <button type="button" data-action="become-helper">Become a helper</button>
+    <button type="button" data-action="reset" id="reset-btn" hidden>Reset sample data</button>
   </nav>
 </footer>
+
+<dialog id="signup" aria-labelledby="su-title">
+  <form class="dlg" id="su-form" method="dialog" novalidate>
+    <h3 id="su-title">Volunteer for this task</h3>
+    <p class="desc" id="su-task"></p>
+    <div class="roles" role="radiogroup" aria-label="How do you want to help?">
+      <label class="role" id="role-owner"><input type="radio" name="role" value="owner"><span>Lead the task<small>You own it from start to finish</small></span></label>
+      <label class="role" id="role-helper"><input type="radio" name="role" value="helper"><span>Be a helper<small>Support the lead</small></span></label>
+    </div>
+    <div class="field"><label for="su-name">Your name *</label><input class="in" id="su-name" name="name" autocomplete="name" maxlength="100"></div>
+    <div class="field"><label for="su-email">Email</label><input class="in" id="su-email" name="email" type="email" autocomplete="email" maxlength="150"></div>
+    <div class="field"><label for="su-phone">Phone</label><input class="in" id="su-phone" name="phone" type="tel" autocomplete="tel" maxlength="40"></div>
+    <div class="field"><label for="su-note">Note (optional)</label><textarea class="in" id="su-note" name="note" maxlength="500" placeholder="When you are free, skills you bring, questions"></textarea></div>
+    <p class="desc">Email or phone is required so the Trust can reach you. They are kept private and never shown on this page.</p>
+    <p class="formerr" id="su-err" role="alert" hidden></p>
+    <div class="row"><button type="button" class="btn" id="su-cancel">Cancel</button><button type="submit" class="btn primary" id="su-submit">Sign up</button></div>
+  </form>
+</dialog>
 
 <script>
 (function(){
   'use strict';
-  var KEY = 'wct_task_hub_v1';
-  var STATUSES = ['Not started','In progress','Needs help','Done'];
-  var FILTERS = ['All','Remote','On-site','Archive','Events','Grounds'];
+
+  // The Google Sheet web app address is filled in when the site is built (see SHEET_SETUP.md).
+  var RAW_API = '__SHEET_API_URL__';
+  var API_URL = (RAW_API && RAW_API.indexOf('__') !== 0) ? RAW_API : '';
+
+  var LOCAL_KEY = 'wct_task_hub_v2';
+  var SEED = /*SEED*/[{"id":"wct-task-1","title":"Research Potential Donors & VT Grants","category":"Fundraising","description":"Research local businesses, alumni, historical organizations, and identify active Vermont preservation grants with upcoming application deadlines.","deliverable":"Spreadsheet of 15+ potential donors & list of 3-5 open VT grants with application dates.","targetDate":"2026-11-15","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-2","title":"Draft Donor Outreach Letters & Contact Lists","category":"Fundraising","description":"Help prepare clear, warm email, phone, and in-person outreach materials to invite community and donor support for the restoration.","deliverable":"Draft outreach templates (email & letter) plus consolidated contact list.","targetDate":"2026-11-30","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-3","title":"Fundraising Event Support & RSVP Lists","category":"Fundraising","description":"Assist with planning small community fundraising gatherings, welcome handouts, sign-in sheets, and following up with RSVPs.","deliverable":"Event checklist, sign-in sheets, and volunteer schedule for our first gathering.","targetDate":"2026-12-10","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-4","title":"Project Updates & Historical Photo Collection","category":"Communications","description":"Write short, engaging project updates for the community and gather archival photographs and stories of the schoolhouse from residents and alumni.","deliverable":"Two short articles for town bulletin/press + digital folder of tagged historical photos.","targetDate":"2026-11-20","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-5","title":"Flyers, Posters & Community Talking Points","category":"Communications","description":"Prepare printable flyers for town bulletin boards and simple talking points that WCT members and volunteers can use when talking to neighbors.","deliverable":"Print-ready 1-page flyer + concise 5-point cheat sheet on project goals.","targetDate":"2026-11-25","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-6","title":"Schoolhouse Restoration Webpage Hub","category":"Website & Online","description":"Review current wolcottcommunitytrust.com site and assist in laying out a dedicated Schoolhouse Restoration Hub page with timeline, photos, and donation link.","deliverable":"Page wireframe, updated copy, and suggested media layout.","targetDate":"2026-12-05","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-7","title":"Social Media & Email Newsletter Drafts","category":"Website & Online","description":"Prepare monthly updates for the WCT email list and craft 4-6 friendly social media posts announcing work sessions and volunteer shout-outs.","deliverable":"4 ready-to-post social drafts + 1 monthly newsletter draft.","targetDate":"2026-11-18","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-8","title":"Community-Friendly Architectural Summary","category":"Architectural Review","description":"Translate the architect’s technical plans and blueprints into everyday language and simple visuals that show what the renovated schoolhouse could become.","deliverable":"1-page \"Before, After & Future Vision\" visual overview for town meetings.","targetDate":"2026-12-01","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-9","title":"Independent Architectural Plan Review","category":"Architectural Review","description":"Review the architect plans critically with a neighbor architect or knowledgeable local builder and compile specific clarification questions.","deliverable":"Written list of review notes, questions, and recommendations for the WCT board.","targetDate":"2026-11-28","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-10","title":"Schoolhouse Clean-Out Crew Coordination","category":"Physical Work","description":"Break the interior clean-out project into small, manageable jobs and organize 2-3 volunteer work mornings rather than one overwhelming cleanup.","deliverable":"Work crew plan, safety guidelines, and schedule for small team clean-out sessions.","targetDate":"2026-11-10","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-11","title":"Historical Items Inventory & Photo Tagging","category":"Physical Work","description":"Carefully catalog, photograph, and label vintage fixtures, slate chalkboards, desks, and architectural salvage inside the building before work begins.","deliverable":"Photo log and numbered inventory list with condition notes.","targetDate":"2026-11-12","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-12","title":"Exterior Grounds & Brush Clearing","category":"Physical Work","description":"Trim encroaching brush, clear safety walkways around the perimeter, and prepare the exterior grounds for contractor and visitor access.","deliverable":"Clean perimeter walkway and cleared brush piles prepped for chipping.","targetDate":"2026-11-14","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-13","title":"Neighbor & Community Listening Sessions","category":"Community Outreach","description":"Meet with nearby neighbors and long-time residents to hear their thoughts, address questions, and gather local memories of the schoolhouse.","deliverable":"Summary memo of 10 resident conversations with community feedback and interest.","targetDate":"2026-12-15","status":"Open","helpers":[],"updates":[]},{"id":"wct-task-14","title":"AI Media & Restoration Vision Renderings","category":"AI & Marketing","description":"Use AI tools to draft community flyers, generate conceptual visual renderings of the restored schoolhouse, and assemble a slideshow for meetings.","deliverable":"3 visual vision concepts + draft slide presentation for the next public meeting.","targetDate":"2026-11-22","status":"Open","helpers":[],"updates":[]}]/*END_SEED*/;
+
+  // The page shows friendly labels; the sheet stores its own words.
+  var UI = ['Not started','In progress','Needs help','Done'];
+  var TO_SHEET = {'Not started':'Open','In progress':'In Progress','Needs help':'Needs Help','Done':'Completed'};
+  var FROM_SHEET = {'Open':'Not started','In Progress':'In progress','Needs Help':'Needs help','Completed':'Done'};
+  var STEPS = ['Read the task and the deliverable','Do the work, and ask a helper if you get stuck','Check your work against the deliverable','Post a final update and set the status to Done'];
   var CHECK = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M2.5 6.2l2.4 2.4 4.6-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function slug(s){return s.toLowerCase().replace(/\s+/g,'-');}
-  function steps(list,doneCount){return list.map(function(t,i){return {text:t,done:i<doneCount};});}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function slug(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-');}
+  function clean(s,n){return String(s==null?'':s).trim().slice(0,n);}
 
-  function seed(){
-    var n = Date.now(), M = 60000;
-    return {
-      selectedId:'t1', filter:'All',
-      tasks:[
-        {id:'t1',cat:'Archive',loc:'Remote',time:'2 hrs',title:'Scan and tag historical photos',blurb:'Digitize a batch of 10 local photos and add captions.',
-          tags:['No experience needed'],
-          desc:'Help preserve Wolcott’s story. Scan a batch of 10 photos from the collection, then add a short caption to each so neighbors can find them later.',
-          status:'In progress',helperRequested:false,
-          steps:steps(['Download your batch of 10 photos','Scan each photo at 600 dpi','Add a caption: who, where, and year','Upload the batch and mark it complete'],2),
-          log:[{t:n-14*M,text:'Completed step 2 of 4'},{t:n-28*M,text:'Status set to In progress'},{t:n-30*M,text:'Task selected'}]},
-        {id:'t2',cat:'Grounds',loc:'On-site',time:'3 hrs',title:'Tidy the Old Schoolhouse',blurb:'Sweep, sort supplies, and set up the volunteer room.',
-          tags:['Bring work gloves'],
-          desc:'Get the Old Schoolhouse ready for the next group of volunteers. Light cleaning and organizing, no special skills needed.',
-          status:'Not started',helperRequested:false,
-          steps:steps(['Check in with the site lead','Sweep and dust the main room','Sort supplies into labeled bins','Set up tables and chairs'],0),log:[]},
-        {id:'t3',cat:'Data',loc:'Remote',time:'1 hr',title:'Enter records into the Knowledge Map',blurb:'Add town documents to the shared civic data map.',
-          tags:['Basic spreadsheet skills'],
-          desc:'Add documents to the Trust’s shared Knowledge Map. Each record needs a title, date, and source so it can be found and trusted later.',
-          status:'Needs help',helperRequested:true,
-          steps:steps(['Open the Knowledge Map workbook','Pick a document from the intake list','Enter title, date, and source','Mark the record as reviewed'],1),
-          log:[{t:n-3*60*M,text:'Helper requested'},{t:n-3*60*M-5*M,text:'Status set to Needs help'}]},
-        {id:'t4',cat:'Events',loc:'On-site',time:'2 hrs',title:'Welcome table at the bridge celebration',blurb:'Greet neighbors and hand out programs.',
-          tags:['Friendly faces wanted'],
-          desc:'Be the first friendly face at the celebration. Greet neighbors, hand out programs, and point people toward the event.',
-          status:'Not started',helperRequested:false,
-          steps:steps(['Pick up programs and name tags','Set up the welcome table','Greet and direct neighbors','Count leftover programs and pack up'],0),log:[]},
-        {id:'t5',cat:'Writing',loc:'Remote',time:'45 min',title:'Proofread the community newsletter',blurb:'Read through the draft and flag typos.',
-          tags:['Sharp eyes'],
-          desc:'Read the newsletter draft once, flag typos and unclear lines, and send your notes to the editor. No rewriting needed.',
-          status:'Done',helperRequested:false,
-          steps:steps(['Open the newsletter draft','Read for typos and unclear lines','Add comments, don’t rewrite','Send your notes to the editor'],4),
-          log:[{t:n-26*60*M,text:'Status set to Done'},{t:n-27*60*M,text:'Task selected'}]},
-        {id:'t6',cat:'Archive',loc:'On-site',time:'1.5 hrs',title:'Photograph School Street landmarks',blurb:'Capture dated photos for the historical collection.',
-          tags:['Phone camera is fine'],
-          desc:'Take clear daytime photos of landmarks along School Street so the Trust can show how the town looks today.',
-          status:'Not started',helperRequested:false,
-          steps:steps(['Review the landmark list','Photograph each site in daylight','Note the date and location','Upload your photos'],0),log:[]}
-      ]
-    };
-  }
+  // ---------- local state (device only) ----------
+  var local = {selectedId:null, filter:'All', name:'', steps:{}, tasks:null};
+  var tasks = [];
+  var loading = !!API_URL, loadError = '', busy = false, msg = null, msgTimer = null;
+  var draft = {note:''};
 
-  var state, lastSaved = null, saveError = false;
-
-  function load(){
+  function loadLocal(){
     try{
-      var raw = localStorage.getItem(KEY);
-      if(raw){
-        var s = JSON.parse(raw);
-        if(s && Array.isArray(s.tasks) && s.tasks.length) return s;
+      var s = JSON.parse(localStorage.getItem(LOCAL_KEY) || 'null');
+      if(s && typeof s === 'object'){
+        local.selectedId = s.selectedId || null;
+        local.filter = s.filter || 'All';
+        local.name = typeof s.name === 'string' ? s.name : '';
+        local.steps = (s.steps && typeof s.steps === 'object') ? s.steps : {};
+        local.tasks = Array.isArray(s.tasks) ? s.tasks : null;
       }
     }catch(e){}
-    return seed();
   }
-  function save(){
-    try{ localStorage.setItem(KEY, JSON.stringify(state)); lastSaved = Date.now(); saveError = false; }
-    catch(e){ saveError = true; }
-  }
-
-  function byId(id){return state.tasks.filter(function(t){return t.id===id;})[0];}
-  function sel(){return byId(state.selectedId) || state.tasks[0];}
-  function doneCount(t){return t.steps.filter(function(s){return s.done;}).length;}
-  function addLog(t,text){t.log.unshift({t:Date.now(),text:text}); if(t.log.length>50) t.log.length=50;}
-
-  function clock(d){
-    var h=d.getHours(), m=d.getMinutes(), ap=h>=12?'PM':'AM';
-    h=h%12||12; return h+':'+(m<10?'0':'')+m+' '+ap;
-  }
-  function fmt(ts){
-    var d=new Date(ts), n=new Date();
-    var same=d.toDateString()===n.toDateString();
-    var y=new Date(n.getTime()-86400000).toDateString()===d.toDateString();
-    if(same) return 'Today, '+clock(d);
-    if(y) return 'Yesterday, '+clock(d);
-    return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+', '+clock(d);
+  var saveFailed = false;
+  function saveLocal(){
+    try{
+      var o = {selectedId:local.selectedId, filter:local.filter, name:local.name, steps:local.steps};
+      if(!API_URL) o.tasks = tasks;
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(o));
+      saveFailed = false;
+    }catch(e){ saveFailed = true; }
   }
 
+  // ---------- helpers ----------
+  function uiStatus(t){return FROM_SHEET[t.status] || 'Not started';}
+  function byId(id){for(var i=0;i<tasks.length;i++) if(tasks[i].id===id) return tasks[i]; return null;}
+  function sel(){return byId(local.selectedId) || tasks[0] || null;}
+  function categories(){
+    var seen = {}, out = [];
+    tasks.forEach(function(t){ if(t.category && !seen[t.category]){ seen[t.category]=1; out.push(t.category);} });
+    return out;
+  }
+  function prettyDate(d){
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || '');
+    if(!m) return '';
+    return MONTHS[+m[2]-1] + ' ' + (+m[3]);
+  }
+  function todayStr(){
+    var d = new Date(), p = function(n){return (n<10?'0':'')+n;};
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+  }
+  function myName(){return clean(local.name,100) || 'Volunteer';}
+  function stepsFor(t){
+    var a = local.steps[t.id];
+    var out = [];
+    for(var i=0;i<STEPS.length;i++) out.push(!!(a && a[i]));
+    return out;
+  }
   function pill(s){return '<span class="pill s-'+slug(s)+'">'+esc(s)+'</span>';}
 
-  function visible(t){
-    var f=state.filter;
-    return f==='All' || t.loc===f || t.cat===f;
+  // ---------- backend: Google Sheet, or this device in preview mode ----------
+  function callApi(body){
+    return fetch(API_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(body)})
+      .then(function(r){return r.json();})
+      .then(function(d){ if(!d.ok) throw new Error(d.error || 'Something went wrong. Please try again.'); return d; });
+  }
+  function fetchTasks(){
+    return fetch(API_URL + '?action=list').then(function(r){return r.json();}).then(function(d){
+      if(!d.ok) throw new Error(d.error || 'Could not load tasks');
+      return d.tasks;
+    });
+  }
+  function addUpdateLocal(t, author, text){
+    t.updates = t.updates || [];
+    t.updates.unshift({id:'up-'+Date.now()+'-'+Math.floor(Math.random()*1000), author:author, text:text, date:todayStr()});
+    t.updates = t.updates.slice(0,50);
+  }
+  function localWrite(req){
+    var t = byId(req.taskId);
+    if(!t) throw new Error('That task could not be found. Please refresh the page.');
+    if(req.action === 'signup'){
+      var name = clean(req.name,100), email = clean(req.email,150), phone = clean(req.phone,40), note = clean(req.note,500);
+      if(!name) throw new Error('Please provide your name.');
+      if(!email && !phone) throw new Error('Please provide an email or phone number so we can reach you.');
+      if(email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('That email address does not look right.');
+      if(req.role === 'owner'){
+        if(t.owner) throw new Error('Someone just signed up to lead this task. You can join as a helper instead.');
+        t.owner = {name:name};
+        if(t.status === 'Open') t.status = 'In Progress';
+        addUpdateLocal(t, name, 'Stepped up as Lead Task Owner.' + (note ? ' Note: "'+note+'"' : ''));
+      }else{
+        t.helpers = t.helpers || [];
+        t.helpers.push({name:name});
+        addUpdateLocal(t, name, 'Joined as helper.' + (note ? ' Note: "'+note+'"' : ''));
+      }
+    }else if(req.action === 'update'){
+      var text = clean(req.text,1000);
+      if(!TO_SHEET[FROM_SHEET[req.status]]) throw new Error('Please choose a valid status.');
+      if(!text) throw new Error('Please enter a note or progress update.');
+      t.status = req.status;
+      addUpdateLocal(t, clean(req.author,100) || 'Volunteer', text);
+    }
+    return tasks;
+  }
+  // Returns a promise that resolves with the fresh task list.
+  function write(req){
+    if(API_URL) return callApi(req).then(function(d){return d.tasks;});
+    return new Promise(function(res,rej){ try{ res(localWrite(req)); }catch(e){ rej(e);} });
+  }
+  function run(req, okText){
+    if(busy) return Promise.resolve(false);
+    busy = true; setMsg('Saving…', 'warn', 0); render();
+    return write(req).then(function(list){
+      tasks = list; busy = false; setMsg(okText || 'Saved.', '', 4000); saveLocal(); render(); return true;
+    }).catch(function(e){
+      busy = false; setMsg(e && e.message ? e.message : 'Something went wrong. Please try again.', 'err', 8000); render(); return false;
+    });
+  }
+  function setMsg(text, kind, ms){
+    clearTimeout(msgTimer);
+    msg = {text:text, kind:kind || ''};
+    if(ms) msgTimer = setTimeout(function(){ msg = null; render(); }, ms);
+  }
+
+  // ---------- render ----------
+  function banner(){
+    var el = document.getElementById('banner');
+    if(!API_URL) el.innerHTML = '<p class="banner">Preview mode. Changes are saved only in this browser until the Google Sheet is connected (see SHEET_SETUP.md).</p>';
+    else if(loadError) el.innerHTML = '<p class="banner err">'+esc(loadError)+'</p>';
+    else if(loading) el.innerHTML = '<p class="banner">Loading tasks…</p>';
+    else el.innerHTML = '';
+  }
+  function visible(t){return local.filter === 'All' || t.category === local.filter;}
+
+  function savedLine(){
+    if(msg) return '<div class="saved '+msg.kind+'" role="status">'+esc(msg.text)+'</div>';
+    if(saveFailed && !API_URL) return '<div class="saved err" role="status">Couldn’t save in this browser. Changes will be lost when you close the page.</div>';
+    return '<div class="saved" role="status">'+(API_URL
+      ? 'Shared with everyone. Updates are saved in the Trust’s Google Sheet and refresh every minute.'
+      : 'Preview mode. Saved on this device only.')+'</div>';
   }
 
   function render(){
-    var active = document.activeElement && document.activeElement.getAttribute && document.activeElement.getAttribute('data-focus');
+    var fa = document.activeElement, focusKey = null, selStart = null, selEnd = null;
+    if(fa && fa.getAttribute && fa.getAttribute('data-focus')){
+      focusKey = fa.getAttribute('data-focus');
+      try{ selStart = fa.selectionStart; selEnd = fa.selectionEnd; }catch(e){}
+    }
 
-    document.getElementById('filters').innerHTML = FILTERS.map(function(f){
-      return '<button type="button" class="chip" data-action="filter" data-value="'+esc(f)+'" data-focus="f-'+esc(f)+'" aria-pressed="'+(state.filter===f)+'">'+esc(f)+'</button>';
+    banner();
+    document.getElementById('reset-btn').hidden = !!API_URL;
+
+    var cats = ['All'].concat(categories());
+    if(cats.indexOf(local.filter) < 0) local.filter = 'All';
+    document.getElementById('filters').innerHTML = cats.map(function(f){
+      return '<button type="button" class="chip" data-action="filter" data-value="'+esc(f)+'" data-focus="f-'+esc(slug(f))+'" aria-pressed="'+(local.filter===f)+'">'+esc(f)+'</button>';
     }).join('');
 
-    var list = state.tasks.filter(visible);
+    var list = tasks.filter(visible);
     document.getElementById('grid').innerHTML = list.length ? list.map(function(t){
-      var dc=doneCount(t), n=t.steps.length;
-      var meta=[t.time,t.loc].concat(t.helperRequested?['Helper requested']:['Helper available']).join(' · ');
-      return '<button type="button" class="card" data-action="select" data-id="'+t.id+'" data-focus="c-'+t.id+'" aria-pressed="'+(t.id===state.selectedId)+'">'+
-        '<span class="top"><span class="cat">'+esc(t.cat)+'</span>'+pill(t.status)+'</span>'+
-        '<h3>'+esc(t.title)+'</h3><p>'+esc(t.blurb)+'</p>'+
+      var helpers = (t.helpers||[]).length;
+      var due = prettyDate(t.targetDate);
+      var meta = [due ? 'Due '+due : 'Date to be set', t.owner ? 'Lead: '+t.owner.name : 'Needs a lead', helpers + (helpers===1?' helper':' helpers')].join(' · ');
+      return '<button type="button" class="card" data-action="select" data-id="'+esc(t.id)+'" data-focus="c-'+esc(t.id)+'" aria-pressed="'+(sel() && t.id===sel().id)+'">'+
+        '<span class="top"><span class="cat">'+esc(t.category)+'</span>'+pill(uiStatus(t))+'</span>'+
+        '<h3>'+esc(t.title)+'</h3><p>'+esc(t.deliverable || t.description)+'</p>'+
         '<span class="meta-line">'+esc(meta)+'</span>'+
-        '<span class="bar" role="img" aria-label="'+dc+' of '+n+' steps done"><i style="width:'+(n?Math.round(dc/n*100):0)+'%"></i></span>'+
       '</button>';
-    }).join('') : '<p class="sub">No tasks match this filter.</p>';
+    }).join('') : '<p class="empty">'+(loading ? 'Loading tasks…' : 'No tasks in this focus area yet.')+'</p>';
 
-    var t=sel(), dc=doneCount(t), n=t.steps.length;
-    var tags=[t.time,t.loc].concat(t.tags||[]);
-    document.getElementById('detail').innerHTML =
-      '<div class="top"><span class="cat">'+esc(t.cat)+'</span>'+pill(t.status)+'</div>'+
+    var t = sel();
+    var panel = document.getElementById('detail');
+    if(!t){ panel.innerHTML = '<p class="desc">'+(loading ? 'Loading…' : 'No tasks yet. Add a row to the Tasks sheet to get started.')+'</p>'; restoreFocus(); return; }
+
+    var st = uiStatus(t), done = stepsFor(t), dc = done.filter(Boolean).length;
+    var helpers = t.helpers || [];
+    var due = prettyDate(t.targetDate);
+    var tags = [due ? 'Due '+due : 'Date to be set', t.owner ? 'Lead: '+t.owner.name : 'Needs a lead'];
+    var avatars = (t.owner ? [t.owner.name] : []).concat(helpers.map(function(h){return h.name;})).slice(0,3);
+    var who = (t.owner || helpers.length)
+      ? (t.owner ? 'Lead: '+esc(t.owner.name) : 'No lead yet') + (helpers.length ? ' · Helpers: '+helpers.map(function(h){return esc(h.name);}).join(', ') : ' · No helpers yet')
+      : 'Nobody has signed up yet. Be the first.';
+    var mine = !!(t.owner || helpers.length);
+    var log = (t.updates||[]).slice(0,6);
+
+    panel.innerHTML =
+      '<div class="top"><span class="cat">'+esc(t.category)+'</span>'+pill(st)+'</div>'+
       '<h3 class="title">'+esc(t.title)+'</h3>'+
       '<div class="tags">'+tags.map(function(x){return '<span class="tag">'+esc(x)+'</span>';}).join('')+'</div>'+
-      '<p class="desc">'+esc(t.desc)+'</p>'+
-      '<div class="steps" role="group" aria-label="Steps"><div class="lab"><span>Steps</span><span class="count">'+dc+' of '+n+' done</span></div>'+
-        t.steps.map(function(s,i){
-          return '<button type="button" class="step" role="checkbox" aria-checked="'+s.done+'" data-action="step" data-i="'+i+'" data-focus="s-'+i+'"><span class="box">'+CHECK+'</span><span>'+esc(s.text)+'</span></button>';
+      '<p class="desc">'+esc(t.description)+'</p>'+
+      (t.deliverable ? '<div class="deliv"><div class="lab"><span>Deliverable</span></div><p class="desc">'+esc(t.deliverable)+'</p></div>' : '')+
+      '<div class="steps" role="group" aria-label="Your checklist"><div class="lab"><span>Steps</span><span class="count">'+dc+' of '+STEPS.length+' done</span></div>'+
+        STEPS.map(function(s,i){
+          return '<button type="button" class="step" role="checkbox" aria-checked="'+done[i]+'" data-action="step" data-i="'+i+'" data-focus="s-'+i+'"><span class="box">'+CHECK+'</span><span>'+esc(s)+'</span></button>';
         }).join('')+
+        '<p class="hint">Your checklist is saved on this device only.</p>'+
       '</div>'+
       '<div class="helper" id="helper-box"><h4>Need a hand?</h4>'+
-        '<p>Ask a volunteer or member helper to walk you through it by chat or phone.</p>'+
-        '<div class="who"><span class="avs" aria-hidden="true"><span class="av">A</span><span class="av">M</span><span class="av">J</span></span><span>3 helpers available</span></div>'+
-        (t.helperRequested
-          ? '<button type="button" class="btn block requested" data-action="helper" data-focus="helper">Helper requested · cancel request</button>'
-          : '<button type="button" class="btn primary block" data-action="helper" data-focus="helper">Request a helper</button>')+
+        '<p>Sign up to lead or help, or ask a volunteer or member helper to walk you through it by chat or phone.</p>'+
+        '<div class="who">'+(avatars.length?'<span class="avs" aria-hidden="true">'+avatars.map(function(n){return '<span class="av">'+esc(n.charAt(0).toUpperCase())+'</span>';}).join('')+'</span>':'')+'<span>'+who+'</span></div>'+
+        '<div class="btns">'+
+          '<button type="button" class="btn primary block" data-action="signup" data-focus="signup"'+(busy?' disabled':'')+'>Volunteer for this task</button>'+
+          (st==='Needs help'
+            ? '<button type="button" class="btn requested block" data-action="helper" data-focus="helper"'+(busy?' disabled':'')+'>Helper requested · cancel request</button>'
+            : '<button type="button" class="btn block" data-action="helper" data-focus="helper"'+(busy||st==='Done'?' disabled':'')+'>Request a helper</button>')+
+        '</div>'+
       '</div>'+
-      '<div><div class="lab"><span id="st-l">Your status</span></div>'+
+      '<div><div class="lab"><span id="st-l">Task status</span></div>'+
         '<div class="seg" role="radiogroup" aria-labelledby="st-l">'+
-        STATUSES.map(function(s){
-          return '<button type="button" role="radio" aria-checked="'+(t.status===s)+'" data-action="status" data-value="'+esc(s)+'" data-focus="g-'+slug(s)+'">'+esc(s)+'</button>';
-        }).join('')+'</div></div>'+
-      '<div><div class="lab"><span>Activity log</span></div>'+
-        (t.log.length
-          ? '<ul class="log">'+t.log.slice(0,5).map(function(e){return '<li><span class="t">'+esc(e.text)+'</span><time datetime="'+new Date(e.t).toISOString()+'">'+esc(fmt(e.t))+'</time></li>';}).join('')+'</ul>'
-          : '<p class="desc" style="margin-top:12px">Nothing logged yet. Check off a step or set your status to begin.</p>')+
+        UI.map(function(s){
+          return '<button type="button" role="radio" aria-checked="'+(st===s)+'" data-action="status" data-value="'+esc(s)+'" data-focus="g-'+slug(s)+'"'+(busy?' disabled':'')+'>'+esc(s)+'</button>';
+        }).join('')+'</div>'+
+        '<div class="composer">'+
+          '<div class="field"><label for="my-name">Your name (shown on your updates)</label><input class="in" id="my-name" data-focus="name" autocomplete="name" maxlength="100" value="'+esc(local.name)+'"></div>'+
+          '<div class="field"><label for="my-note">Add a progress note</label><textarea class="in" id="my-note" data-focus="note" maxlength="1000" placeholder="What did you finish? What is next?">'+esc(draft.note)+'</textarea></div>'+
+          '<button type="button" class="btn sm" data-action="post" data-focus="post"'+(busy?' disabled':'')+'>Post update</button>'+
+        '</div>'+
       '</div>'+
-      '<div class="saved'+(saveError?' err':'')+'" role="status">'+
-        (saveError ? 'Couldn’t save in this browser. Changes will be lost when you close the page.'
-          : (lastSaved ? 'Saved at '+esc(clock(new Date(lastSaved)))+'. Your progress stays on this device.' : 'Saved automatically. Pick up where you left off on this device.'))+
-      '</div>';
+      '<div><div class="lab"><span>Activity log</span></div>'+
+        (log.length
+          ? '<ul class="log">'+log.map(function(e){return '<li><span class="t"><b>'+esc(e.author)+':</b> '+esc(e.text)+'</span><time datetime="'+esc(e.date)+'">'+esc(prettyDate(e.date) || e.date)+'</time></li>';}).join('')+'</ul>'
+          : '<p class="desc" style="margin-top:12px">Nothing logged yet. Sign up or post an update to begin.</p>')+
+      '</div>'+
+      savedLine();
 
-    if(active){
-      var el=document.querySelector('[data-focus="'+active+'"]');
-      if(el) el.focus({preventScroll:true});
-    }
-  }
-
-  function commit(){ save(); render(); }
-
-  var actions = {
-    filter:function(el){ state.filter=el.getAttribute('data-value'); commit(); },
-    select:function(el){ state.selectedId=el.getAttribute('data-id'); commit();
-      if(window.matchMedia('(max-width:1180px)').matches){ document.getElementById('detail').scrollIntoView({behavior:'smooth',block:'start'}); } },
-    step:function(el){
-      var t=sel(), i=+el.getAttribute('data-i'), s=t.steps[i]; if(!s) return;
-      s.done=!s.done;
-      var dc=doneCount(t), n=t.steps.length;
-      addLog(t, s.done ? 'Completed step '+(i+1)+' of '+n : 'Reopened step '+(i+1)+' of '+n);
-      if(dc===n && t.status!=='Done'){ t.status='Done'; addLog(t,'Status set to Done'); }
-      else if(dc<n && t.status==='Done'){ t.status='In progress'; addLog(t,'Status set to In progress'); }
-      else if(dc>0 && t.status==='Not started'){ t.status='In progress'; addLog(t,'Status set to In progress'); }
-      commit();
-    },
-    status:function(el){
-      var t=sel(), v=el.getAttribute('data-value'); if(t.status===v) return;
-      t.status=v; addLog(t,'Status set to '+v); commit();
-    },
-    helper:function(){
-      var t=sel();
-      if(!t.helperRequested){
-        t.helperRequested=true; addLog(t,'Helper requested');
-        if(t.status!=='Done' && t.status!=='Needs help'){ t.status='Needs help'; addLog(t,'Status set to Needs help'); }
-      }else{
-        t.helperRequested=false; addLog(t,'Helper request cancelled');
-        if(t.status==='Needs help'){ t.status=doneCount(t)>0?'In progress':'Not started'; addLog(t,'Status set to '+t.status); }
+    restoreFocus();
+    function restoreFocus(){
+      if(!focusKey) return;
+      var el = document.querySelector('[data-focus="'+focusKey+'"]');
+      if(el){
+        el.focus({preventScroll:true});
+        try{ if(selStart!=null && el.setSelectionRange) el.setSelectionRange(selStart, selEnd); }catch(e){}
       }
-      commit();
-    },
-    'ask-help':function(){ goHelper(); },
-    'goto-helper':function(el,ev){ ev.preventDefault(); goHelper(); },
-    reset:function(){
-      if(!window.confirm('Reset all tasks to the sample data? Your saved progress on this device will be cleared.')) return;
-      state=seed(); lastSaved=null; commit();
     }
-  };
-
-  function goHelper(){
-    var b=document.getElementById('helper-box'); if(!b) return;
-    b.scrollIntoView({behavior:'smooth',block:'center'});
-    var btn=b.querySelector('button'); if(btn) btn.focus({preventScroll:true});
   }
 
-  document.addEventListener('click',function(ev){
-    var el=ev.target.closest('[data-action]');
-    if(!el) return;
-    var fn=actions[el.getAttribute('data-action')];
-    if(fn) fn(el,ev);
+  // ---------- actions ----------
+  var dlg = document.getElementById('signup');
+  var form = document.getElementById('su-form');
+  var suErr = document.getElementById('su-err');
+
+  function openSignup(){
+    var t = sel(); if(!t) return;
+    document.getElementById('su-task').textContent = t.title;
+    form.reset();
+    document.getElementById('su-name').value = local.name;
+    suErr.hidden = true;
+    var hasOwner = !!t.owner;
+    var o = form.querySelector('input[value="owner"]'), h = form.querySelector('input[value="helper"]');
+    o.disabled = hasOwner;
+    document.getElementById('role-owner').className = 'role' + (hasOwner ? ' off' : '');
+    (hasOwner ? h : o).checked = true;
+    if(typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open','');
+  }
+  function closeSignup(){ if(typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open'); }
+  document.getElementById('su-cancel').addEventListener('click', closeSignup);
+  form.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var t = sel(); if(!t) return;
+    var f = new FormData(form);
+    var name = clean(f.get('name'),100), email = clean(f.get('email'),150), phone = clean(f.get('phone'),40);
+    if(!name){ suErr.textContent = 'Please provide your name.'; suErr.hidden = false; return; }
+    if(!email && !phone){ suErr.textContent = 'Please provide an email or phone number so we can reach you.'; suErr.hidden = false; return; }
+    var btn = document.getElementById('su-submit'); btn.disabled = true;
+    write({action:'signup', taskId:t.id, role:f.get('role') || 'helper', name:name, email:email, phone:phone, note:clean(f.get('note'),500)})
+      .then(function(list){
+        tasks = list; local.name = name; saveLocal(); closeSignup();
+        setMsg('Thank you, '+name+'! You are signed up for "'+t.title+'".', '', 6000); render();
+      })
+      .catch(function(e){ suErr.textContent = e && e.message ? e.message : 'Something went wrong. Please try again.'; suErr.hidden = false; })
+      .then(function(){ btn.disabled = false; });
   });
 
-  state=load();
-  if(!byId(state.selectedId)) state.selectedId=state.tasks[0].id;
-  if(FILTERS.indexOf(state.filter)<0) state.filter='All';
-  render();
+  function statusText(from, to){return 'Status set to '+to+'.';}
+
+  var actions = {
+    filter:function(el){ local.filter = el.getAttribute('data-value'); saveLocal(); render(); },
+    select:function(el){
+      local.selectedId = el.getAttribute('data-id'); draft.note = ''; msg = null; saveLocal(); render();
+      if(window.matchMedia('(max-width:1180px)').matches) document.getElementById('detail').scrollIntoView({behavior:'smooth',block:'start'});
+    },
+    step:function(el){
+      var t = sel(), i = +el.getAttribute('data-i'); if(!t) return;
+      var a = stepsFor(t); a[i] = !a[i]; local.steps[t.id] = a; saveLocal(); render();
+    },
+    signup:function(){ openSignup(); },
+    status:function(el){
+      var t = sel(), to = el.getAttribute('data-value'); if(!t || uiStatus(t) === to) return;
+      var note = clean(draft.note,1000);
+      run({action:'update', taskId:t.id, status:TO_SHEET[to], author:myName(), text:note || statusText(uiStatus(t), to)}, 'Status set to '+to+'.').then(function(ok){ if(ok) draft.note=''; render(); });
+    },
+    helper:function(){
+      var t = sel(); if(!t) return;
+      var cur = uiStatus(t);
+      var req = cur !== 'Needs help';
+      var to = req ? 'Needs help' : (t.owner ? 'In progress' : 'Not started');
+      run({action:'update', taskId:t.id, status:TO_SHEET[to], author:myName(), text: req ? 'Requested a helper.' : 'Helper request cancelled.'},
+          req ? 'Helper requested. A volunteer or member will reach out.' : 'Helper request cancelled.');
+    },
+    post:function(){
+      var t = sel(); if(!t) return;
+      var note = clean(draft.note,1000);
+      if(!note){ setMsg('Please enter a note or progress update.', 'err', 6000); render(); return; }
+      run({action:'update', taskId:t.id, status:t.status, author:myName(), text:note}, 'Update posted.').then(function(ok){ if(ok) draft.note=''; render(); });
+    },
+    'ask-help':function(){ goHelper(); },
+    'become-helper':function(){ goHelper(); },
+    reset:function(){
+      if(!window.confirm('Reset all tasks to the sample data? Your saved progress on this device will be cleared.')) return;
+      tasks = JSON.parse(JSON.stringify(SEED)); local.steps = {}; msg = null; saveLocal(); render();
+    }
+  };
+  function goHelper(){
+    document.getElementById('detail').scrollIntoView({behavior:'smooth',block:'start'});
+    var b = document.getElementById('helper-box'); if(!b) return;
+    var btn = b.querySelector('button'); if(btn) btn.focus({preventScroll:true});
+  }
+
+  document.addEventListener('click', function(ev){
+    var el = ev.target.closest('[data-action]');
+    if(!el || el.disabled) return;
+    var fn = actions[el.getAttribute('data-action')];
+    if(fn) fn(el, ev);
+  });
+  document.addEventListener('input', function(ev){
+    var id = ev.target && ev.target.id;
+    if(id === 'my-note') draft.note = ev.target.value;
+    else if(id === 'my-name'){ local.name = ev.target.value; saveLocal(); }
+  });
+
+  // ---------- start ----------
+  loadLocal();
+  if(API_URL){
+    var refresh = function(first){
+      fetchTasks().then(function(list){
+        tasks = list; loading = false; loadError = '';
+        if(!byId(local.selectedId) && tasks.length) local.selectedId = tasks[0].id;
+        if(!busy) render();
+      }).catch(function(){
+        loading = false;
+        loadError = 'Could not load the latest tasks. Please refresh the page in a minute.';
+        if(!busy) render();
+      });
+    };
+    refresh(true);
+    setInterval(function(){ if(!busy && !dlg.open) refresh(false); }, 60000);
+    render();
+  }else{
+    tasks = (local.tasks && local.tasks.length) ? local.tasks : JSON.parse(JSON.stringify(SEED));
+    if(!byId(local.selectedId)) local.selectedId = tasks[0] ? tasks[0].id : null;
+    render();
+  }
 })();
 </script>
 </body>
